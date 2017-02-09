@@ -68,7 +68,7 @@ def update_i(i):
             # Accumulates.
             s_grad += (rj * error)
             s_rate += (rj * rj)
-            errors += (error + error)
+            errors += (error * error)
 
             cnt += 1
 
@@ -82,12 +82,7 @@ def update_i(i):
         loss += (errors + 0.5 * l2_reg * coeff * coeff + l1_reg * coeff)
 
         # Update a coefficient for a pair of item `i` and its neighbor `j`.
-        update = 0.
-        if l1_reg < abs(s_grad):
-            if s_grad > 0.:
-                update = (s_grad - l1_reg) / (l2_reg + s_rate)
-            else:
-                update = (s_grad + l1_reg) / (l2_reg + s_rate)
+        update = soft_thresholding(s_grad / (l2_reg + s_rate), l1_reg / (l2_reg + s_rate))
         W[j, i] = update
 
 
