@@ -2,7 +2,11 @@ import numpy as np
 
 """SLIM: Sparse Linear Model
 
-LibRec implementation: https://github.com/guoguibing/librec/blob/2.0.0/core/src/main/java/net/librec/recommender/cf/ranking/SLIMRecommender.java
+LibRec implementation:
+https://github.com/guoguibing/librec/blob/2.0.0/core/src/main/java/net/librec/recommender/cf/ranking/SLIMRecommender.java
+
+[1] Xia Ning and George Karypis, SLIM: Sparse Linear Methods for Top-N Recommender Systems, ICDM 2011.
+[2] Friedman et al., Regularization Paths for Generalized Linear Models via Coordinate Descent, Journal of Statistical Software, 2010.
 
 """
 
@@ -16,6 +20,17 @@ A = np.array([[0, 2, 0, 1, 0],
               [2, 0, 0, 1, 2]])
 
 W = np.zeros((n_item, n_item))
+
+
+def soft_thresholding(z, r):
+    """The soft-thresholding operator (e.g., Eq. (6) in [2]).
+    """
+    if r < abs(z):
+        if z > 0.:
+            return z - r
+        else:
+            return z + r
+    return 0.
 
 
 def predict(u, i, i_exclude):
@@ -82,7 +97,7 @@ def update_i(i):
         loss += (errors + 0.5 * l2_reg * coeff * coeff + l1_reg * coeff)
 
         # Update a coefficient for a pair of item `i` and its neighbor `j`.
-        update = soft_thresholding(s_grad / (l2_reg + s_rate), l1_reg / (l2_reg + s_rate))
+        update = soft_thresholding(s_grad, l1_reg) / (l2_reg + s_rate)
         W[j, i] = update
 
 
