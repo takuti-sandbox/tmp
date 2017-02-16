@@ -10,14 +10,39 @@ https://github.com/guoguibing/librec/blob/2.0.0/core/src/main/java/net/librec/re
 
 """
 
+PATH_TO_ML1M = '/Users/kitazawa/data/ml-1m/ratings.dat'
+
+with open(PATH_TO_ML1M) as f:
+    lines = list(map(lambda l: l.rstrip().split('::'), f.readlines()))
+    np.random.shuffle(lines)
+
 n_iter = 100
 l1_reg = l2_reg = 0.1
 
-n_user, n_item = 3, 5
+n_user, n_item = 6040, 3900
 
-A = np.array([[0, 2, 0, 1, 0],
-              [0, 1, 1, 2, 1],
-              [2, 0, 0, 1, 2]])
+n_sample = len(lines)
+n_train = int(n_sample * 0.8)
+n_test = n_sample - n_train
+
+A = np.zeros((n_user, n_item))
+user_ids, item_ids = {}, {}
+cnt_u, cnt_i = 0, 0
+print('loading data...')
+for l in lines[:n_train]:
+    user_id, item_id, rating, timestamp = int(l[0]), int(l[1]), float(l[2]), int(l[3])
+
+    if user_id not in user_ids:
+        user_ids[user_id] = cnt_u
+        cnt_u += 1
+    u = user_ids[user_id]
+
+    if item_id not in item_ids:
+        item_ids[item_id] = cnt_i
+        cnt_i += 1
+    i = item_ids[item_id]
+
+    A[u, i] = rating
 
 W = np.zeros((n_item, n_item))
 
@@ -112,6 +137,7 @@ def is_converged(it):
     return (delta < 1e-3) if it > 1 else False
 
 
+print('start training...')
 loss_last = float('inf')
 for it in range(n_iter):
     # Can be used to check convergence.
@@ -126,4 +152,10 @@ for it in range(n_iter):
         break
 
 A_ = np.dot(A, W)
-print(np.sqrt(sum(sum((A - A_) ** 2)) / A.size))  # RMSE
+err = 0.
+for l in lines[n_train:]:
+    user_id, item_id, rating, timestamp = int(l[0]), int(l[1]), float(l[2]), int(l[3])
+    u = user_ids[user_id]
+    i = item_ids[item_id]
+    err += ((A_[u, i] - rating) ** 2)
+print(np.sqrt(err / n_test))  # RMSE
