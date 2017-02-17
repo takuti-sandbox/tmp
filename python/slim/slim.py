@@ -33,17 +33,19 @@ class SLIM:
         # Using only some nearest-neighbors makes SLIM better,
         # but, currently all items are considered.
         nn_items = set(range(self.n_item))
-        nn_items.remove(i)
 
         # For each nearest-neighbor item, update coefficents by coordinate descent.
         for j in nn_items:
+            if i == j:
+                continue
+
             # skip users who did not rate item `j`
             nz = self.A[:, j].nonzero()[0]
             nnz = nz.size
 
             # Compute error between actual rating and prediction for a user-item pair.
             # Item `j` should be ignored from prediction.
-            ii = [k for k in range(self.n_item) if k != j]
+            ii = list(nn_items - set([j]))
             pred = safe_sparse_dot(self.A[nz, :][:, ii], self.W[ii, i])
             error = (self.A[nz, i] - pred).toarray().reshape(nnz,)  # (nnz, )
 
