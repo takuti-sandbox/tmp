@@ -59,17 +59,13 @@ class SLIM:
             loss += (errors + 0.5 * self.l2_reg * coeff * coeff + self.l1_reg * coeff)
 
             # Update a coefficient for a pair of item `i` and its neighbor `j`.
-            update = self.__soft_thresholding(s_grad, self.l1_reg) / (self.l2_reg + s_rate)
+            # Utilizing the soft-thresholding operator (e.g., Eq. (6) in [2]).
+            update = 0.
+            if self.l1_reg < abs(s_grad):
+                if s_grad > 0.:
+                    update = (s_grad - self.l1_reg) / (self.l2_reg + s_rate)
+                else:
+                    update = (s_grad + self.l1_reg) / (self.l2_reg + s_rate)
             self.W[j, i] = update
 
         return loss
-
-    def __soft_thresholding(self, z, r):
-        """The soft-thresholding operator (e.g., Eq. (6) in [2]).
-        """
-        if r < abs(z):
-            if z > 0.:
-                return z - r
-            else:
-                return z + r
-        return 0.
