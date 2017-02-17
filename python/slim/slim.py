@@ -1,4 +1,6 @@
 import numpy as np
+import scipy.sparse as sp
+from sklearn.utils.extmath import safe_sparse_dot
 
 """SLIM: Sparse Linear Model
 
@@ -14,30 +16,14 @@ https://github.com/guoguibing/librec/blob/2.0.0/core/src/main/java/net/librec/re
 class SLIM:
 
     def __init__(self, A, n_user, n_item, l1_reg=0.1, l2_reg=0.1):
-        self.A = A
+        self.A = sp.lil_matrix(A)
         self.n_user = n_user
         self.n_item = n_item
 
-        self.W = np.zeros((self.n_item, self.n_item))
+        self.W = sp.lil_matrix((self.n_item, self.n_item))
 
         self.l1_reg = l1_reg
         self.l2_reg = l2_reg
-
-    def predict(self, u, i, i_exclude):
-        """Make prediction for a pair of user `u` and item `i`, except for item `i_exclude`.
-        """
-        pred = 0.
-
-        # Only consider items that user `u` has rated before.
-        # This makes top-N recommendation faster.
-        for j in range(self.n_item):
-            rj = self.A[u, j]
-            if rj == 0. or j == i_exclude:
-                continue
-
-            pred += (rj * self.W[j, i])
-
-        return pred
 
     def update_i(self, i):
         """Update coefficients for item `i`.
@@ -51,34 +37,20 @@ class SLIM:
 
         # For each nearest-neighbor item, update coefficents by coordinate descent.
         for j in nn_items:
-            s_grad = s_rate = errors = 0.
+            # skip users who did not rate item `j`
+            nz = self.A[:, j].nonzero()[0]
+            nnz = nz.size
 
-            cnt = 0
+            # Compute error between actual rating and prediction for a user-item pair.
+            # Item `j` should be ignored from prediction.
+            ii = [k for k in range(self.n_item) if k != j]
+            pred = safe_sparse_dot(self.A[nz, :][:, ii], self.W[ii, i])
+            error = (self.A[nz, i] - pred).toarray().reshape(nnz,)  # (nnz, )
 
-            # For each user who has rated the nearest-neighbor item `j`.
-            for u in range(self.n_user):
-                rj = self.A[u, j]
-                if rj == 0.:  # skip un-rated element
-                    continue
-
-                # Get this user's rating for item `i`.
-                ri = self.A[u, i]
-
-                # Compute error between actual rating and prediction for a user-item pair.
-                # Item `j` can be ignored from prediction.
-                error = ri - self.predict(u, i, j)
-
-                # Accumulates.
-                s_grad += (rj * error)
-                s_rate += (rj * rj)
-                errors += (error * error)
-
-                cnt += 1
-
-            # Compute mean value of the accumulated values.
-            s_grad /= cnt
-            s_rate /= cnt
-            errors /= cnt
+            # Compute mean of accumulated values over the users who rated item `j`.
+            errors = np.dot(error, error) / nnz
+            s_grad = (self.A[nz, j].T * error)[0] / nnz
+            s_rate = (self.A[nz, j].T * self.A[nz, j])[0, 0] / nnz
 
             # Accumulated loss can be used to check convergence.
             coeff = self.W[j, i]
