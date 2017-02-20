@@ -28,7 +28,7 @@ def load_data():
     cnt_u, cnt_i = 0, 0
 
     A = sp.lil_matrix((n_user, n_item))
-    test_samples = []
+    test_samples = {}
 
     for j, l in enumerate(lines):
         user_id, item_id, rating, timestamp = int(l[0]), int(l[1]), float(l[2]), int(l[3])
@@ -46,7 +46,9 @@ def load_data():
         if j < n_train:
             A[u, i] = rating
         else:
-            test_samples.append((u, i, rating))
+            if u not in test_samples:
+                test_samples[u] = []
+            test_samples[u].append((i, rating))
 
     return A, sp.lil_matrix((n_item, n_item)), test_samples
 
@@ -98,14 +100,42 @@ def update_i(i):
     return wi, loss
 
 
-def evaluate():
+def evaluate(n=10):
     A_ = safe_sparse_dot(A, W)
 
-    err = 0.
-    for u, i, r in test_samples:
-        err += ((A_[u, i] - r) ** 2)
+    # per-rating hit rates
+    rHR = {1: 0., 2: 0., 3: 0., 4: 0., 5: 0.}
 
-    return np.sqrt(err / len(test_samples))  # RMSE
+    # cumulative hit rates
+    cHR = {1: 0., 2: 0., 3: 0., 4: 0., 5: 0.}
+
+    for u, ratings in test_samples.items():
+        # sort items in a descending order
+        ranked_items = np.argsort(A_[u, :].toarray()[0])[::-1]
+
+        # create top-n list of un-rated items
+        rec = set([])
+        for i in ranked_items:
+            if A[u, i] == 0:
+                rec.add(i)
+            if len(rec) == n:
+                break
+
+        for r_th in [1, 2, 3, 4, 5]:
+            truth = set([i for i, r in ratings if r == r_th])
+            if len(rec & truth) > 0:
+                rHR[r_th] += 1
+
+            truth = set([i for i, r in ratings if r <= r_th])
+            if len(rec & truth) > 0:
+                cHR[r_th] += 1
+
+    denom = len(test_samples)  # number of testing users
+    for r_th in [1, 2, 3, 4, 5]:
+        rHR[r_th] /= denom
+        cHR[r_th] /= denom
+
+    return rHR, cHR
 
 
 print('load data...')
@@ -134,4 +164,6 @@ for it in range(n_iter):
         break
 
 print('evaluate...')
-print(evaluate())
+rHR, cHR = evaluate()
+print('rHR: ', rHR)
+print('cHR: ', cHR)
