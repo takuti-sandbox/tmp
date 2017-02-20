@@ -54,6 +54,7 @@ def load_data():
 def update_i(i):
     """Update coefficients for item `i`.
     """
+    wi = W[:, i]  # (n_item, 1)
     loss = 0
 
     # Using only some nearest-neighbors makes SLIM better,
@@ -72,7 +73,7 @@ def update_i(i):
         # Compute error between actual rating and prediction for a user-item pair.
         # Item `j` should be ignored from prediction.
         ii = list(nn_items - set([j]))
-        pred = safe_sparse_dot(A[nz, :][:, ii], W[ii, i])
+        pred = safe_sparse_dot(A[nz, :][:, ii], wi[ii, 0])
         error = (A[nz, i] - pred).toarray().reshape(nnz,)  # (nnz, )
 
         # Compute mean of accumulated values over the users who rated item `j`.
@@ -81,7 +82,7 @@ def update_i(i):
         s_rate = (A[nz, j].T * A[nz, j])[0, 0] / nnz
 
         # Accumulated loss can be used to check convergence.
-        coeff = W[j, i]
+        coeff = wi[j, 0]
         loss += (errors + 0.5 * l2_reg * coeff * coeff + l1_reg * coeff)
 
         # Update a coefficient for a pair of item `i` and its neighbor `j`.
@@ -92,9 +93,9 @@ def update_i(i):
                 update = (s_grad - l1_reg) / (l2_reg + s_rate)
             else:
                 update = (s_grad + l1_reg) / (l2_reg + s_rate)
-        W[j, i] = update
+        wi[j, 0] = update
 
-    return loss
+    return wi, loss
 
 
 def evaluate():
@@ -114,15 +115,21 @@ n_user, n_item = A.shape
 print('start training...')
 l1_reg = l2_reg = 0.1
 n_iter = 100
-loss_last = float('inf')
+accum_loss_ = float('inf')
 for it in range(n_iter):
     pool = mp.Pool(mp.cpu_count())
-    loss = sum(pool.map(update_i, range(n_item)))
+    res = pool.map(update_i, range(n_item))
     pool.close()
     pool.join()
 
-    delta = abs(loss_last - loss)
-    loss_last = loss
+    # reduction
+    accum_loss = 0
+    for i, (wi, loss) in enumerate(res):
+        W[:, i] = wi
+        accum_loss += loss
+
+    delta = abs(accum_loss_ - accum_loss)
+    accum_loss_ = accum_loss
     if it > 1 and delta < 1e-3:
         break
 
