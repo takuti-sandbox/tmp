@@ -28,6 +28,10 @@ def trapezoid(x1, x2, y1, y2):
 
 
 def single(pred, label):
+    """
+    >>> single([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0])
+    0.8333333333333334
+    """
     a, fp, tp, fp_prev, tp_prev = auc(pred, label)
 
     # get()
@@ -36,6 +40,18 @@ def single(pred, label):
 
 
 def multi(pred, label, sep=2):
+    """
+    >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=0)
+    0.8333333333333334
+    >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=1)
+    0.8333333333333334
+    >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=2)
+    0.8333333333333334
+    >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=3)
+    0.8333333333333334
+    >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=4)
+    0.8333333333333334
+    """
     a1, fp1, tp1, fp_prev1, tp_prev1 = auc(pred[:sep], label[:sep])
     a2, fp2, tp2, fp_prev2, tp_prev2 = auc(pred[sep:], label[sep:])
 
@@ -59,10 +75,5 @@ def multi(pred, label, sep=2):
 
 
 if __name__ == '__main__':
-    pred = [.8, .7, .5, .3, .2]
-    label = [1, 1, 0, 1, 0]
-
-    print('Single:', single(pred, label))
-
-    for i in range(5):
-        print('Multi', i, ':', multi(pred, label, sep=i))
+    import doctest
+    doctest.testmod()
