@@ -13,7 +13,7 @@ def auc(pred, label):
             fp_prev = fp
             tp_prev = tp
 
-        if label[i] == 1.:
+        if label[i] == 1:
             tp += 1
         else:
             fp += 1
