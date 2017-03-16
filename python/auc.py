@@ -1,4 +1,8 @@
-def auc(pred, label):
+import numpy as np
+from sklearn.metrics import roc_auc_score
+
+
+def my_auc(pred, label):
     n = len(pred)
 
     a = 0.
@@ -32,7 +36,7 @@ def single(pred, label):
     >>> single([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0])
     0.8333333333333334
     """
-    a, fp, tp, fp_prev, tp_prev = auc(pred, label)
+    a, fp, tp, fp_prev, tp_prev = my_auc(pred, label)
 
     # get()
     a += trapezoid(fp, fp_prev, tp, tp_prev)
@@ -52,8 +56,8 @@ def multi(pred, label, sep=2):
     >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=4)
     0.8333333333333334
     """
-    a1, fp1, tp1, fp_prev1, tp_prev1 = auc(pred[:sep], label[:sep])
-    a2, fp2, tp2, fp_prev2, tp_prev2 = auc(pred[sep:], label[sep:])
+    a1, fp1, tp1, fp_prev1, tp_prev1 = my_auc(pred[:sep], label[:sep])
+    a2, fp2, tp2, fp_prev2, tp_prev2 = my_auc(pred[sep:], label[sep:])
 
     a1 += trapezoid(fp1, fp_prev1, tp1, tp_prev1)
     a2 += trapezoid(fp2, fp_prev2, tp2, tp_prev2)
@@ -74,6 +78,20 @@ def multi(pred, label, sep=2):
     return a / (tp * fp)
 
 
+def sklearn_auc():
+    n = 1000
+
+    labels = np.random.choice([0, 1], n)
+    scores = np.random.choice([.1, .2, .3, .4, .5, .6, .7, .8, .9], n)
+
+    print(roc_auc_score(labels, scores))
+
+    for l, s in zip(labels, scores):
+        print('%d,%.1f' % (l, s))
+
+
 if __name__ == '__main__':
     import doctest
     doctest.testmod()
+
+    sklearn_auc()
