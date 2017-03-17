@@ -79,14 +79,14 @@ def multi(pred, label, sep=2):
 
 
 def sklearn_auc():
-    n = 1000
+    n = 100
 
     labels = np.random.choice([0, 1], n)
     scores = np.random.choice([.1, .2, .3, .4, .5, .6, .7, .8, .9], n)
 
     print(roc_auc_score(labels, scores))
 
-    for l, s in zip(labels, scores):
+    for l, s in sorted(zip(labels, scores), key=lambda x: x[-1], reverse=True):
         print('%d,%.1f' % (l, s))
 
 
