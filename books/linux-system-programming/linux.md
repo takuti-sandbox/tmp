@@ -409,7 +409,7 @@
 	- 初期化 inotify_init() => ウォッチ inotify_add_watch()
 	- watchディスクリプタ (wd) は監視したいイベントを表現したり
 	- inotify_event構造体でイベントを表現 ***code***
-	- 移動のイベントは FROM, TO の2つにわかれる。これをツァイ王付けるのはcookieで、cookie値の同じイベントを一緒に
+	- 移動のイベントは FROM, TO の2つにわかれる。これを対応付けるのはcookieで、cookie値の同じイベントを一緒に
 	- inotify_rm_watch(fd, wd) でウォッチ削除
 	- イベントのキューサイズも取れる
 	- close(fd) でインスタンスも関連ウォッチも削除される
