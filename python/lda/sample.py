@@ -6,7 +6,7 @@ import numpy as np
 def main():
     X = np.array([[0, 1, 0, 2, 2, 0], [1, 0, 1, 1, 3, 3]])
 
-    olda = OnlineLDA(2, 1024, 0.7, n_topics=2)
+    olda = OnlineLDA(n_topics=2)
     olda.partial_fit(X)
     print(olda.lambda_)
 

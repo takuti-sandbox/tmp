@@ -33,8 +33,8 @@ def dirichlet_expectation_2d(arr):
 
 class OnlineLDA:
 
-    def __init__(self, total_samples, tau0, kappa, n_topics=10, batch_size=128):
-        self.total_samples = total_samples
+    def __init__(self, tau0=1024, kappa=1024, n_topics=10, batch_size=1):
+        self.total_samples = 0
         self.n_topics = n_topics
         self.batch_size = batch_size
 
@@ -58,6 +58,7 @@ class OnlineLDA:
             self.__init_latent_vars(n_features)
 
         for head in range(0, n_samples, self.batch_size):
+            self.total_samples += self.batch_size
             tail = head + self.batch_size
             self.__train_em(X[head:tail, :])
 
