@@ -64,7 +64,7 @@ def send_handler(client_socket_fd, msg):
 
     # echo the received message to the client
     sent_len = client_socket.send(msg)
-    print('[%s:%d] > %s' % (client_addr, client_port, msg[:sent_len]))
+    print('[%s:%d] < %s' % (client_addr, client_port, msg[:sent_len]))
 
     # check if the entire message has been sent
     if sent_len == len(msg):
