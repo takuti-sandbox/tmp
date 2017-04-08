@@ -23,9 +23,9 @@ n_item, n_user = size(R)
 MPRs = []
 for user in 1:n_user
     test_indices = find(flg -> flg == 1, is_test[:, user])
-
     truth = find(r -> r == 1, R[test_indices, user])
-    rank = sortperm(Predicted[test_indices, user], rev=true)
+
+    rank = sortperm(Predicted[:, user], rev=true)
 
     mpr = measure(MPR(), truth, rank)
     push!(MPRs, mpr)
