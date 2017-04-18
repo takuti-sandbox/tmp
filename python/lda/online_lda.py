@@ -33,7 +33,7 @@ def dirichlet_expectation_2d(arr):
 
 class OnlineLDA:
 
-    def __init__(self, tau0=1024, kappa=1024, n_topics=10, batch_size=1):
+    def __init__(self, tau0=1024, kappa=.7, n_topics=10, batch_size=1):
         self.total_samples = 0
         self.n_topics = n_topics
         self.batch_size = batch_size
