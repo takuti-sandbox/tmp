@@ -26,7 +26,10 @@ class PLSA:
             self.e_step()
             self.m_step()
 
-            L = self.likelihood()
+            L = self.loglikelihood()
+            perp = self.perplexity()
+            print('Iter %d: log-likelihood = %f, perplexity = %f' % (it + 1, L, perp))
+            print(self.Pzw)
             if abs(L - prevL) < eps:
                 break
             prevL = L
@@ -61,26 +64,39 @@ class PLSA:
                     self.Pz[z] += (self.D[d, w] * self.Pdwz[d, w, z])
             self.Pz = self.normalize(self.Pz)
 
-    def likelihood(self):
+    def loglikelihood(self):
         L = 0.
 
         for d in range(self.n_doc):
             for w in range(self.n_word):
                 # comput P(d, w) = \Sigma_z P(z) P(w|z) P(d|z)
-                pdw = 0.
+                Pdw = 0.
                 for z in range(self.K):
-                    pdw += (self.Pz[z] * self.Pzw[z, w] * self.Pzd[z, d])
+                    Pdw += (self.Pz[z] * self.Pzw[z, w] * self.Pzd[z, d])
 
                 # L = \Sigma_d \Sigma_z n(d,w) * log(P(d,w))
-                L += (self.D[d, w] * np.log(pdw))
+                L += (self.D[d, w] * np.log(Pdw))
 
         return L
 
+    def perplexity(self):
+        numer = 0.
+        denom = 0.
+
+        for d in range(self.n_doc):
+            for w in range(self.n_word):
+                Pdw = 0.
+                for z in range(self.K):
+                    Pdw += self.Pzw[z, w] * self.Pz[z]
+                numer += (self.D[d, w] * np.log(Pdw))
+                denom += self.D[d, w]
+
+        return np.exp(-1. * numer / denom)
+
 
 def main():
-    D = np.array([[1, 1, 0, 0],
-                  [0, 0, 1, 1],
-                  [0, 0, 0, 1]])
+    D = np.array([[1, 1, 1, 0, 0, 0, 0, 0, 0],
+                  [0, 0, 0, 1, 1, 1, 1, 2, 1]])
     p = PLSA(D, 2)
     p.train()
     print(p.Pz)
