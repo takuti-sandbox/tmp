@@ -15,10 +15,12 @@ class PLSA:
 
         self.normalize = lambda ary: (ary / np.sum(ary))
 
-        self.Pdwz = np.random.random((self.n_doc, self.n_word, self.K))  # P(z|d,w)
-        self.Pzw = np.random.random((self.K, self.n_word))  # P(w|z)
-        self.Pzd = np.random.random((self.K, self.n_doc))  # P(d|z)
-        self.Pz = self.normalize(np.random.random(self.K))  # P(z)
+        random_state = np.random.RandomState(1001)
+
+        self.Pdwz = random_state.uniform(size=(self.n_doc, self.n_word, self.K))  # P(z|d,w)
+        self.Pzw = random_state.uniform(size=(self.K, self.n_word))  # P(w|z)
+        self.Pzd = random_state.uniform(size=(self.K, self.n_doc))  # P(d|z)
+        self.Pz = self.normalize(random_state.uniform(size=self.K))  # P(z)
 
     def train(self, n_iter=1000, eps=1e-5):
         prevL = float('-inf')
