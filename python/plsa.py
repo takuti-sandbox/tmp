@@ -101,10 +101,11 @@ def main():
                   [0, 0, 0, 1, 1, 1, 1, 2, 1]])
     p = PLSA(D, 2)
     p.train()
-    print(p.Pz)
-    print(p.Pzd)
-    print(p.Pzw)
-    print(p.Pdwz)
+    print('Done:')
+    print('[topic 1]')
+    print(p.Pzw[0])
+    print('[topic 2]')
+    print(p.Pzw[1])
 
 
 if __name__ == '__main__':
