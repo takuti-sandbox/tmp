@@ -26,6 +26,23 @@ class Foo {
     arr[0] = 100;
     System.out.println(lst.get(0)[0]);
 
+    System.out.println("=== addAll() (shallow copy) test");
+    List<float[]> lst2 = new ArrayList<float[]>();
+    lst2.addAll(lst);
+    System.out.println(lst.get(0)[0] + " " + lst2.get(0)[0]);
+    arr[0] = 1000;
+    System.out.println(lst.get(0)[0] + " " + lst2.get(0)[0]);
+
+    System.out.println("=== clone() (deep copy) test");
+    List<float[]> lst3 = new ArrayList<float[]>();
+    lst2.addAll(lst);
+    for (float[] elem : lst) {
+      lst3.add(elem.clone());
+    }
+    System.out.println(lst.get(0)[0] + " " + lst3.get(0)[0]);
+    arr[0] = 0;
+    System.out.println(lst.get(0)[0] + " " + lst3.get(0)[0]);
+
     float[] ary = new float[] {0.99999f, 1e-32f};
     System.out.println("Original: " + ary[0] + " " + ary[1]);
     double sum = 0.d;
@@ -36,5 +53,8 @@ class Foo {
       ary[i] /= sum;
     }
     System.out.println("Normalized: " + ary[0] + " " + ary[1]);
+
+    String s = "did";
+    System.out.println(s == "did");
   }
 }
