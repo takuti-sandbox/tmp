@@ -56,5 +56,8 @@ class Foo {
 
     String s = "did";
     System.out.println(s == "did");
+
+    System.out.println(Double.MAX_VALUE + " " + Math.sqrt(Double.MAX_VALUE));
+    System.out.println(Double.POSITIVE_INFINITY + " " + Math.sqrt(Double.POSITIVE_INFINITY));
   }
 }
