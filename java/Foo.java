@@ -59,5 +59,10 @@ class Foo {
 
     System.out.println(Double.MAX_VALUE + " " + Math.sqrt(Double.MAX_VALUE));
     System.out.println(Double.POSITIVE_INFINITY + " " + Math.sqrt(Double.POSITIVE_INFINITY));
+
+    String ss = "xž";
+    System.out.println(ss.length());
+    System.out.println(ss.getBytes().length);
+    System.out.println(new String(ss.getBytes()));
   }
 }
