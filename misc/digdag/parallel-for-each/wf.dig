@@ -1,0 +1,16 @@
+_export:
+  td:
+    database: sample_datasets
+
++loop:
+  +main:
+    for_each>:
+      elem: [xxx, yyy]
+    _parallel: true
+    _do:
+      +run:
+        td>: queries/${elem}.sql
+        store_last_results: true
+
+      +print:
+        echo>: "[${elem}] ${td.last_results.result}"
