@@ -1,19 +1,20 @@
 # coding: utf-8
 
-"""USAGE: %(program)s WIKI_XML_DUMP OUTPUT_PREFIX
+"""USAGE: %(program)s WIKI_XML_DUMP OUTPUT_PREFIX LANG
 """
 
 import logging
 import os.path
 import sys
 
+from nltk import pos_tag, word_tokenize
+
 import gensim.corpora.wikicorpus as wikicorpus
 from gensim.corpora import Dictionary, MmCorpus, WikiCorpus
 from gensim.models import TfidfModel
-from gensim.utils import to_unicode
+from gensim.utils import to_unicode, deaccent
 
 import MeCab
-
 
 # Wiki is first scanned for all distinct word types (~7M). The types that
 # appear in more than 10% of articles are removed and from the rest, the
@@ -24,17 +25,35 @@ tagger = MeCab.Tagger()
 tagger.parse('')
 
 
-def tokenize_ja(text):
-    node = tagger.parseToNode(to_unicode(text,  encoding='utf8', errors='ignore'))
-    while node:
-        if node.feature.split(',')[0] == '名詞':
-            yield node.surface.lower()
-        node = node.next
+def tokenize_ja(content):
+    def tokenize(text):
+        node = tagger.parseToNode(to_unicode(text, encoding='utf8', errors='ignore'))
+        while node:
+            if node.feature.split(',')[0] == '名詞':
+                yield node.surface.lower()
+            node = node.next
 
-
-def tokenize(content):
     return [
-        to_unicode(token) for token in tokenize_ja(content)
+        to_unicode(token) for token in tokenize(content)
+        if 2 <= len(token) <= 15 and not token.startswith('_')
+    ]
+
+
+def tokenize_en(content):
+    def tokenize(text):
+        text = to_unicode(text, encoding='utf8', errors='ignore')
+        text = text.lower()
+
+        # normalize unicode (i.e., remove accentuation)
+        text = deaccent(text)
+
+        for token, pos in pos_tag(word_tokenize(text)):
+            # only Noun is acceptable: https://pythonprogramming.net/natural-language-toolkit-nltk-part-speech-tagging/
+            if token in ['NN', 'NNS', 'NNP', 'NNPS']:
+                yield token
+
+    return [
+        to_unicode(token) for token in tokenize(content)
         if 2 <= len(token) <= 15 and not token.startswith('_')
     ]
 
@@ -49,14 +68,20 @@ if __name__ == '__main__':
     logger.info("running %s" % ' '.join(sys.argv))
 
     # check and process input arguments
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print(globals()['__doc__'] % locals())
         sys.exit(1)
-    src, dst = sys.argv[1], sys.argv[2]
+    src, dst, lang = sys.argv[1], sys.argv[2], sys.argv[3]
 
-    wikicorpus.tokenize = tokenize
-
-    wiki = WikiCorpus(src)
+    if lang == 'ja':
+        wikicorpus.tokenize = tokenize_ja
+        wiki = WikiCorpus(src)
+    elif lang == 'en':
+        wikicorpus.tokenize = tokenize_en
+        wiki = WikiCorpus(src, lemmatize=False)  # honestly, token has to be somehow lemmatized, but Hive does not have the equivalent functionality
+    else:
+        print('invalid lang')
+        sys.exit(1)
 
     # only keep the most frequent words
     wiki.dictionary.filter_extremes(no_below=20, no_above=0.1, keep_n=DEFAULT_DICT_SIZE)
