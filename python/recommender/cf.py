@@ -3,7 +3,7 @@ import numpy.linalg as ln
 
 
 def similarity(x, y):
-    return np.dot(x, y) / (ln.norm(x, ord=2) * ln.norm(y, ord=2))
+    return np.inner(x, y) / (ln.norm(x, ord=2) * ln.norm(y, ord=2))
 
 
 user_a = np.array([5, 0, 1, 1, 0, 2])
