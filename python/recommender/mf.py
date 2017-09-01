@@ -14,19 +14,20 @@ k = 2
 P = np.random.rand(n_user, k)
 Q = np.random.rand(n_item, k)
 
-for user in range(n_user):
-    for item in range(n_item):
-        if R[user, item] == 0:
-            continue
+for i in range(10):
+    for user in range(n_user):
+        for item in range(n_item):
+            if R[user, item] == 0:
+                continue
 
-        p, q = P[user], Q[item]
+            p, q = P[user], Q[item]
 
-        err = R[user, item] - np.inner(p, q)
+            err = R[user, item] - np.inner(p, q)
 
-        next_p = p - 0.1 * (-2. * (err * q - 0.01 * p))
-        next_q = q - 0.1 * (-2. * (err * p - 0.01 * q))
+            next_p = p - 0.1 * (-2. * (err * q - 0.01 * p))
+            next_q = q - 0.1 * (-2. * (err * p - 0.01 * q))
 
-        P[user], Q[user] = next_p, next_q
+            P[user], Q[user] = next_p, next_q
 
 print(np.dot(P, Q.T))
 # [[ 1.44089222  2.10861345  1.35586737  1.30939713  2.25707035  1.10801462]
