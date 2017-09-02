@@ -14,7 +14,11 @@ k = 2
 P = np.random.rand(n_user, k)
 Q = np.random.rand(n_item, k)
 
-for i in range(10):
+last_accum_err = float('inf')
+
+while True:
+    accum_err = 0
+
     for user in range(n_user):
         for item in range(n_item):
             if R[user, item] == 0:
@@ -23,11 +27,16 @@ for i in range(10):
             p, q = P[user], Q[item]
 
             err = R[user, item] - np.inner(p, q)
+            accum_err += err
 
             next_p = p - 0.1 * (-2. * (err * q - 0.01 * p))
             next_q = q - 0.1 * (-2. * (err * p - 0.01 * q))
 
             P[user], Q[user] = next_p, next_q
+
+    if abs(accum_err - last_accum_err) < 1e-3:
+        break
+    last_accum_err = accum_err
 
 print(np.dot(P, Q.T))
 # [[ 1.44089222  2.10861345  1.35586737  1.30939713  2.25707035  1.10801462]
