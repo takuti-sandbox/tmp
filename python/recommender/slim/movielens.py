@@ -100,6 +100,20 @@ def update_i(i):
     return wi, loss
 
 
+def evaluate_mae():
+    A_ = safe_sparse_dot(A, W)
+
+    s = 0.
+    cnt = 0
+
+    for u, ratings in test_samples.items():
+        for i, rating in ratings:
+            s += abs(A_[u, i] - rating)
+            cnt += 1
+
+    return s / cnt
+
+
 def evaluate(n=10):
     A_ = safe_sparse_dot(A, W)
 
@@ -164,6 +178,10 @@ for it in range(n_iter):
         break
 
 print('evaluate...')
+
+mae = evaluate_mae()
+print('MAE: ', mae)
+
 rHR, cHR = evaluate()
 print('rHR: ', rHR)
 print('cHR: ', cHR)
