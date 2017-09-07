@@ -53,15 +53,17 @@ def load_data():
     return A, sp.lil_matrix((n_item, n_item)), test_samples
 
 
-def update_i(i):
+def update_i(i, k=5):
     """Update coefficients for item `i`.
     """
     wi = W[:, i]  # (n_item, 1)
     loss = 0
 
     # Using only some nearest-neighbors makes SLIM better,
-    # but, currently all items are considered.
-    nn_items = set(range(n_item)[:5])
+    # but, for now randomly sampled k items are considered.
+    others = set(range(n_item))
+    others.remove(i)
+    nn_items = set(np.random.choice(list(others), k, replace=False))
 
     # For each nearest-neighbor item, update coefficents by coordinate descent.
     for j in nn_items:
