@@ -73,6 +73,8 @@ def update_i(i, k=5):
         # skip users who did not rate item `j`
         nz = A[:, j].nonzero()[0]
         nnz = nz.size
+        if nnz == 0:
+            continue
 
         # Compute error between actual rating and prediction for a user-item pair.
         # Item `j` should be ignored from prediction.
