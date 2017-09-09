@@ -53,17 +53,24 @@ def load_data():
     return A, sp.lil_matrix((n_item, n_item)), test_samples
 
 
-def update_i(i, k=5):
+def compute_knn(k=5):
+    knn = dict()
+    all_items = set(range(n_item))
+    for i in range(n_item):
+        # Using only some nearest-neighbors makes SLIM better,
+        # but, for now randomly sampled k items are considered.
+        nn_items = set(np.random.choice(list(all_items - set([i])), k, replace=False))
+        knn[i] = nn_items
+    return knn
+
+
+def update_i(i):
     """Update coefficients for item `i`.
     """
     wi = W[:, i]  # (n_item, 1)
     loss = 0
 
-    # Using only some nearest-neighbors makes SLIM better,
-    # but, for now randomly sampled k items are considered.
-    others = set(range(n_item))
-    others.remove(i)
-    nn_items = set(np.random.choice(list(others), k, replace=False))
+    nn_items = knn[i]
 
     # For each nearest-neighbor item, update coefficents by coordinate descent.
     for j in nn_items:
@@ -159,6 +166,9 @@ def evaluate(n=10):
 print('load data...')
 A, W, test_samples = load_data()
 n_user, n_item = A.shape
+
+print('computing knn...')
+knn = compute_knn()
 
 print('start training...')
 l1_reg = l2_reg = 0.1
