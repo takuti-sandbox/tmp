@@ -21,7 +21,8 @@ import MeCab
 # DEFAULT_DICT_SIZE most frequent types are kept.
 DEFAULT_DICT_SIZE = 100000
 
-tagger = MeCab.Tagger()
+# tagger = MeCab.Tagger()
+tagger = MeCab.Tagger(' -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
 tagger.parse('')
 
 
