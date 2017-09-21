@@ -24,9 +24,22 @@ def relu():
     print(F.relu(data))  # max(0, x)
 
 
+def softmax():
+    data = autograd.Variable(torch.randn(5))
+    print(data)
+    probability_distr = F.softmax(data)   # exp(x) / sum(exp(x))
+    print(probability_distr)
+    print(probability_distr.sum())  # 1.0
+    print(F.log_softmax(data))  # take log of softmax to prevent too small output and underflow
+    print(F.log_softmax(data).sum())
+
+
 if __name__ == '__main__':
     print('Affine map')
     affine_map()
 
     print('ReLU')
     relu()
+
+    print('Softmax')
+    softmax()
