@@ -4,6 +4,7 @@
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
+import torch.nn.functional as F
 
 torch.manual_seed(1)
 
@@ -17,6 +18,15 @@ def affine_map():
     print(lin(data))  # AX + b (2x3)
 
 
+def relu():
+    data = autograd.Variable(torch.randn(2, 2))
+    print(data)
+    print(F.relu(data))  # max(0, x)
+
+
 if __name__ == '__main__':
     print('Affine map')
     affine_map()
+
+    print('ReLU')
+    relu()
