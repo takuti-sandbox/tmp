@@ -2,15 +2,19 @@ _export:
   td:
     database: sample_datasets
 
-+loop:
-  +main:
-    for_each>:
-      elem: [xxx, yyy]
-    _parallel: true
-    _do:
-      +run:
-        td>: queries/${elem}.sql
-        store_last_results: true
++main:
+  for_each>:
+    elem: [a, b]
+  _parallel: true
+  _do:
+    +run:
+      td>:
+        data: "select '${elem}' as result"
+      store_last_results: true
+
+    +task_with_last_results:
+      _export:
+        result_local: ${td.last_results.result}
 
       +print:
-        echo>: "[${elem}] ${td.last_results.result}"
+        echo>: "[${elem}] ${result_local}"
