@@ -1,0 +1,9 @@
+_export:
+  td:
+    database: sample_datasets
+
++run:
+  td>:
+    data: "select '${elem}' as result"
+  _export:
+    elem: 100
