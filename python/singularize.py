@@ -65,38 +65,58 @@ irregular = {
 }
 
 # regexp1, replacement1, regexp2, replacement2, ...
-rules = [(re.compile('(quiz)zes$'), '$1'),
-         (re.compile('(matr)ices$'), '$1ix'),
-         (re.compile('(vert|ind)ices$'), '$1ex'),
-         (re.compile('^(ox)en'), '$1'),
-         (re.compile('(alias|status)$'), '$1'),
-         (re.compile('(alias|status)es$'), '$1'),
-         (re.compile('(octop|vir)us$'), '$1us'),
-         (re.compile('(octop|vir)i$'), '$1us'),
-         (re.compile('(cris|ax|test)es$'), '$1is'),
-         (re.compile('(cris|ax|test)is$'), '$1is'),
-         (re.compile('(shoe)s$'), '$1'),
-         (re.compile('(o)es$'), '$1'),
-         (re.compile('(bus)es$'), '$1'),
-         (re.compile('([m|l])ice$'), '$1ouse'),
-         (re.compile('(x|ch|ss|sh)es$'), '$1'),
-         (re.compile('(m)ovies$'), '$1ovie'),
-         (re.compile('(s)eries$'), '$1eries'),
-         (re.compile('([^aeiouy]|qu)ies$'), '$1y'),
-         (re.compile('([lr])ves$'), '$1f'),
-         (re.compile('(tive)s$'), '$1'),
-         (re.compile('(hive)s$'), '$1'),
-         (re.compile('([^f])ves$'), '$1fe'),
-         (re.compile('(^analy)sis$'), '$1sis'),
-         (re.compile('(^analy)ses$'), '$1sis'),
-         (re.compile('((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$'), '$1$2sis'),
-         (re.compile('([ti])a$'), '$1um'),
-         (re.compile('(n)ews$'), '$1ews'),
-         (re.compile('(s|si|u)s$'), '$1s'),
+rules = [(re.compile('(quiz)zes$'), '\\1'),
+         (re.compile('(matr)ices$'), '\\1ix'),
+         (re.compile('(vert|ind)ices$'), '\\1ex'),
+         (re.compile('^(ox)en'), '\\1'),
+         (re.compile('(alias|status)$'), '\\1'),
+         (re.compile('(alias|status)es$'), '\\1'),
+         (re.compile('(octop|vir)us$'), '\\1us'),
+         (re.compile('(octop|vir)i$'), '\\1us'),
+         (re.compile('(cris|ax|test)es$'), '\\1is'),
+         (re.compile('(cris|ax|test)is$'), '\\1is'),
+         (re.compile('(shoe)s$'), '\\1'),
+         (re.compile('(o)es$'), '\\1'),
+         (re.compile('(bus)es$'), '\\1'),
+         (re.compile('([m|l])ice$'), '\\1ouse'),
+         (re.compile('(x|ch|ss|sh)es$'), '\\1'),
+         (re.compile('(m)ovies$'), '\\1ovie'),
+         (re.compile('(s)eries$'), '\\1eries'),
+         (re.compile('([^aeiouy]|qu)ies$'), '\\1y'),
+         (re.compile('([lr])ves$'), '\\1f'),
+         (re.compile('(tive)s$'), '\\1'),
+         (re.compile('(hive)s$'), '\\1'),
+         (re.compile('([^f])ves$'), '\\1fe'),
+         (re.compile('(^analy)sis$'), '\\1sis'),
+         (re.compile('(^analy)ses$'), '\\1sis'),
+         (re.compile('((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$'), '\\1\\2sis'),
+         (re.compile('([ti])a$'), '\\1um'),
+         (re.compile('(n)ews$'), '\\1ews'),
+         (re.compile('(s|si|u)s$'), '\\1s'),
          (re.compile('s$'), '')]
 
 
 def singularize(word):
+    """
+    >>> singularize(None) is None
+    True
+    >>> singularize('')
+    ''
+    >>> singularize('christmas')
+    'christmas'
+    >>> singularize('mothers-in-law')
+    'mother-in-law'
+    >>> singularize("dogs'")
+    "dog's"
+    >>> singularize('children')
+    'child'
+    >>> singularize('apples')
+    'apple'
+    >>> singularize('buses')
+    'bus'
+    >>> singularize('candies')
+    'candy'
+    """
     if word is None:
         return None
 
@@ -117,13 +137,21 @@ def singularize(word):
     if word in irregular:
         return irregular[word]
 
-    for suffix, inflection in range(0, len(rules), 2):
+    # re.compile('(?i)(quiz)zes$'), '\\1'),
+    for suffix, inflection in rules:
         m = suffix.search(word)
-        g = m and m.groups() or []
-        if m:
-            for k in range(len(g)):
-                if g[k] is None:
-                    inflection = inflection.replace('\\' + str(k + 1), '')
-            return suffix.sub(inflection, word)
+        if not m:
+            continue
+
+        g = m.groups()
+        for k in range(len(g)):
+            if g[k] is None:
+                inflection = inflection.replace('\\' + str(k + 1), '')
+        return suffix.sub(inflection, word)
 
     return word
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
