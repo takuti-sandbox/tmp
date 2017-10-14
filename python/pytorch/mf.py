@@ -21,6 +21,11 @@ class MatrixFactorization(nn.Module):
         return (self.user_factors(user) * self.item_factors(item)).sum(1)
 
 
+def load_ml100k():
+    with open('/Users/kitazawa/data/movielens/ml-100k/u.data') as f:
+        return list(map(lambda l: l.rstrip().split('\t'), f.readlines()))
+
+
 def as_long_tensor(val):
     return torch.LongTensor([np.long(val)])
 
@@ -30,27 +35,19 @@ def as_float_tensor(val):
 
 
 def main():
-    # 5 users * 6 items
-    R = np.array([[5, 0, 1, 1, 0, 2],
-                  [0, 2, 0, 4, 0, 4],
-                  [4, 5, 0, 1, 1, 2],
-                  [0, 0, 3, 5, 2, 0],
-                  [2, 0, 1, 0, 4, 4]])
-    n_user, n_item = R.shape
+    data = load_ml100k()
+    n_user, n_item = 943, 1682
 
-    model = MatrixFactorization(n_user, n_item)
+    model = MatrixFactorization(n_user + 1, n_item + 1)  # +1 for unused "0" index
     loss_function = nn.MSELoss()
-    optimizer = optim.SGD(model.parameters(), lr=1e-6)
+    optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
     last_accum_loss = float('inf')
-    indices = list(zip(range(n_user), range(n_item)))
-    while True:
+    for epoch in range(10):
         accum_loss = 0
-        random.shuffle(indices)
-        for u, i in indices:
-            r = R[u, i]
-            if r == 0.:
-                continue
+        random.shuffle(data)
+        for sample in data:
+            u, i, r = sample[0], sample[1], sample[2]
 
             model.zero_grad()
 
@@ -67,16 +64,19 @@ def main():
 
             optimizer.step()
 
+        print(epoch + 1, accum_loss)
         if abs(accum_loss - last_accum_loss) < 1e-3:
             break
         last_accum_loss = accum_loss
 
-    for u in range(n_user):
-        for i in range(n_item):
-            user = autograd.Variable(as_long_tensor(u))
-            item = autograd.Variable(as_long_tensor(i))
-            prediction = model(user, item)
-            print(u, i, R[u, i], prediction.data[0])
+    err = 0.
+    for sample in data:
+        u, i, r = sample[0], sample[1], sample[2]
+        user = autograd.Variable(as_long_tensor(u))
+        item = autograd.Variable(as_long_tensor(i))
+        prediction = model(user, item)
+        err += abs(prediction.data[0] - np.float(r))
+    print('MAE = {}'.format(err / len(data)))
 
 
 if __name__ == '__main__':
