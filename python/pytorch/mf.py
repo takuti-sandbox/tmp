@@ -43,8 +43,13 @@ def as_float_tensor(val):
 
 def main():
     samples = load_ml100k()
-    n_rating = len(samples)
     n_user, n_item = 943, 1682
+
+    # 8:2 train/test splitting
+    random.shuffle(samples)
+    tail_train = int(len(samples) * 0.8)
+    samples_train = samples[:tail_train]
+    samples_test = samples[tail_train:]
 
     model = MatrixFactorization(n_user, n_item, k=20)
     loss_function = nn.MSELoss()
@@ -53,8 +58,8 @@ def main():
     last_accum_loss = float('inf')
     for epoch in range(10):
         accum_loss = 0
-        random.shuffle(samples)
-        for u, i, r in samples:
+        random.shuffle(samples_train)
+        for u, i, r in samples_train:
             model.zero_grad()
 
             user = autograd.Variable(as_long_tensor(u))
@@ -76,7 +81,7 @@ def main():
         last_accum_loss = accum_loss
 
     accum_absolute_error, accum_squared_error = 0., 0.
-    for u, i, r in samples:
+    for u, i, r in samples_test:
         user = autograd.Variable(as_long_tensor(u))
         item = autograd.Variable(as_long_tensor(i))
 
@@ -84,8 +89,8 @@ def main():
 
         accum_absolute_error += abs(prediction.data[0] - r)
         accum_squared_error += (prediction.data[0] - r) ** 2
-    mae = accum_absolute_error / n_rating
-    rmse = np.sqrt(accum_squared_error / n_rating)
+    mae = accum_absolute_error / len(samples_test)
+    rmse = np.sqrt(accum_squared_error / len(samples_test))
     print('MAE = {}, RMSE = {}'.format(mae, rmse))
 
 
