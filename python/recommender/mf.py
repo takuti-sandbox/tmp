@@ -32,7 +32,7 @@ while True:
             next_p = p - 0.1 * (-2. * (err * q - 0.01 * p))
             next_q = q - 0.1 * (-2. * (err * p - 0.01 * q))
 
-            P[user], Q[user] = next_p, next_q
+            P[user], Q[item] = next_p, next_q
 
     if abs(accum_err - last_accum_err) < 1e-3:
         break
