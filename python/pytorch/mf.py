@@ -3,10 +3,21 @@
 http://blog.ethanrosenthal.com/2017/06/20/matrix-factorization-in-pytorch/
 """
 
+import csv
 import random
 import numpy as np
 import torch
 from torch import autograd, nn, optim
+
+
+def load_ml100k():
+    samples = []
+    with open('/Users/kitazawa/data/movielens/ml-100k/u.data', newline='') as f:
+        reader = csv.reader(f, delimiter='\t')
+        for row in reader:
+            u, i, r = int(row[0]) - 1, int(row[1]) - 1, float(row[2])
+            samples.append((u, i, r))
+    return samples
 
 
 class MatrixFactorization(nn.Module):
@@ -18,12 +29,8 @@ class MatrixFactorization(nn.Module):
         self.item_factors = nn.Embedding(n_item, k, sparse=True)
 
     def forward(self, user, item):
+        # inner product of 1xN and 1xM tensors
         return (self.user_factors(user) * self.item_factors(item)).sum(1)
-
-
-def load_ml100k():
-    with open('/Users/kitazawa/data/movielens/ml-100k/u.data') as f:
-        return list(map(lambda l: l.rstrip().split('\t'), f.readlines()))
 
 
 def as_long_tensor(val):
@@ -35,25 +42,24 @@ def as_float_tensor(val):
 
 
 def main():
-    data = load_ml100k()
+    samples = load_ml100k()
+    n_rating = len(samples)
     n_user, n_item = 943, 1682
 
-    model = MatrixFactorization(n_user + 1, n_item + 1)  # +1 for unused "0" index
+    model = MatrixFactorization(n_user, n_item, k=20)
     loss_function = nn.MSELoss()
     optimizer = optim.SGD(model.parameters(), lr=1e-2)
 
     last_accum_loss = float('inf')
     for epoch in range(10):
         accum_loss = 0
-        random.shuffle(data)
-        for sample in data:
-            u, i, r = sample[0], sample[1], sample[2]
-
+        random.shuffle(samples)
+        for u, i, r in samples:
             model.zero_grad()
 
             user = autograd.Variable(as_long_tensor(u))
             item = autograd.Variable(as_long_tensor(i))
-            rating = autograd.Variable(as_float_tensor(r))
+            rating = autograd.Variable(as_float_tensor(r))  # target
 
             prediction = model(user, item)
 
@@ -69,14 +75,18 @@ def main():
             break
         last_accum_loss = accum_loss
 
-    err = 0.
-    for sample in data:
-        u, i, r = sample[0], sample[1], sample[2]
+    accum_absolute_error, accum_squared_error = 0., 0.
+    for u, i, r in samples:
         user = autograd.Variable(as_long_tensor(u))
         item = autograd.Variable(as_long_tensor(i))
+
         prediction = model(user, item)
-        err += abs(prediction.data[0] - np.float(r))
-    print('MAE = {}'.format(err / len(data)))
+
+        accum_absolute_error += abs(prediction.data[0] - r)
+        accum_squared_error += (prediction.data[0] - r) ** 2
+    mae = accum_absolute_error / n_rating
+    rmse = np.sqrt(accum_squared_error / n_rating)
+    print('MAE = {}, RMSE = {}'.format(mae, rmse))
 
 
 if __name__ == '__main__':
