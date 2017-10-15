@@ -10,6 +10,14 @@ import torch
 from torch import autograd, nn, optim
 from concurrent import futures
 
+from logging import getLogger, StreamHandler, Formatter, DEBUG
+logger = getLogger(__name__)
+handler = StreamHandler()
+handler.setFormatter(Formatter('%(asctime)s : %(process)d : %(message)s'))
+handler.setLevel(DEBUG)
+logger.setLevel(DEBUG)
+logger.addHandler(handler)
+
 
 class MatrixFactorization(object):
 
@@ -35,7 +43,7 @@ class MatrixFactorization(object):
 
 
 def run_mf(samples_train, samples_test, n_user, n_item):
-    print('# Matrix Factorization')
+    logger.info('mf : start training')
 
     model = MatrixFactorization(n_user, n_item, k=20, lr=1e-3)
 
@@ -46,7 +54,7 @@ def run_mf(samples_train, samples_test, n_user, n_item):
         for u, i, r in samples_train:
             accum_loss += model(u, i, r)
 
-        print('MF', epoch + 1, accum_loss)
+        logger.info('mf : epoch = {:2d}, accum. error = {}'.format(epoch + 1, accum_loss))
         if abs(accum_loss - last_accum_loss) < 1e-3:
             break
         last_accum_loss = accum_loss
@@ -59,7 +67,7 @@ def run_mf(samples_train, samples_test, n_user, n_item):
         accum_squared_error += (prediction - r) ** 2
     mae = accum_absolute_error / len(samples_test)
     rmse = np.sqrt(accum_squared_error / len(samples_test))
-    print('MF: MAE = {}, RMSE = {}'.format(mae, rmse))
+    logger.info('mf : MAE = {}, RMSE = {}'.format(mae, rmse))
 
 
 class MatrixFactorizationPyTorch(nn.Module):
@@ -84,7 +92,7 @@ def as_float_tensor(val):
 
 
 def run_mf_pytorch(samples_train, samples_test, n_user, n_item):
-    print('# Matrix Factorization in PyTorch')
+    logger.info('mf_pytorch : start training')
 
     model = MatrixFactorizationPyTorch(n_user, n_item, k=20)
     loss_function = nn.MSELoss()
@@ -110,7 +118,7 @@ def run_mf_pytorch(samples_train, samples_test, n_user, n_item):
 
             optimizer.step()
 
-        print('MF (PyTorch)', epoch + 1, accum_loss)
+        logger.info('mf_pytorch : epoch = {:2d}, accum. loss = {}'.format(epoch + 1, accum_loss))
         if abs(accum_loss - last_accum_loss) < 1e-3:
             break
         last_accum_loss = accum_loss
@@ -126,7 +134,7 @@ def run_mf_pytorch(samples_train, samples_test, n_user, n_item):
         accum_squared_error += (prediction.data[0] - r) ** 2
     mae = accum_absolute_error / len(samples_test)
     rmse = np.sqrt(accum_squared_error / len(samples_test))
-    print('MF (PyTorch): MAE = {}, RMSE = {}'.format(mae, rmse))
+    logger.info('mf_pytorch : MAE = {}, RMSE = {}'.format(mae, rmse))
 
 
 def load_ml100k():
@@ -150,7 +158,11 @@ if __name__ == '__main__':
     samples_test = samples[tail_train:]
 
     with futures.ProcessPoolExecutor() as executor:
-        f1 = executor.submit(run_mf, samples_train.copy(), samples_test.copy(), n_user, n_item)
-        f2 = executor.submit(run_mf_pytorch, samples_train.copy(), samples_test.copy(), n_user, n_item)
+        f1 = executor.submit(run_mf,
+                             samples_train.copy(), samples_test.copy(),
+                             n_user, n_item)
+        f2 = executor.submit(run_mf_pytorch,
+                             samples_train.copy(), samples_test.copy(),
+                             n_user, n_item)
         f1.result()
         f2.result()
