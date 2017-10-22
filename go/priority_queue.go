@@ -4,6 +4,7 @@ import (
 	"container/heap"
 	"fmt"
 	"math/rand"
+	"time"
 )
 
 type Item struct {
@@ -58,12 +59,13 @@ func getTopItems(items []Item, limit int) []Item {
 }
 
 func main() {
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 	n := 100
 	items := make([]Item, n)
 	for i := 0; i < n; i++ {
 		items[i] = Item{
 			ID:    i,
-			Score: rand.Float32(),
+			Score: rng.Float32(),
 		}
 	}
 
