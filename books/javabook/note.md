@@ -296,3 +296,25 @@
 		- ただ、Optionalは`isPresent()`による値の存在確認が必須になり、nullチェックと手間が変わらない説
 			- nullチェック：開発者の注意次第
 			- Optional：オブジェクトを返す側で、値が存在する場合と存在しない場合、それぞれのコードを書くことを開発者に強制できる
+
+## 7. 文字列操作を極める
+
+- 文字列の結合：StringBuilderでappend, +, "xxx".concat("yyy")
+	- ループで繰り返し結合するときは、StringBuilder.appendが圧倒的に早い
+		- +やconcatはループ毎に文字列オブジェクト生成処理を繰り返している
+		- `"xxx" + "yyy"` はコンパイラによって `new StringBuilder(String.valueOf("xxx").append("yyy")).toString()` に変換されるが、これをループしても毎回無駄にStringBuilderと文字列オブジェクトが生成されるのでパフォーマンス低
+	- StringBuilderのスレッドセーフ版、StringBufferもある
+- Java8からは `String.join()` が標準
+- 分割・置換のStringクラス使用vs正規表現
+	- 一度だけならStringクラスのメソッドをつかって簡潔にかけばいい
+	- 大量の文字列に対して何回もやるなら、事前に正規表現オブジェクトを生成して使いまわす
+- 「デプロイしたら文字化けする」問題にはまらないために、（特にサーバサイドJavaの開発では）デフォルトエンコーディングを使わないよう意識することが大切
+	- 引数なしでStringコンストラクタやStringクラスの `getBytes` を使ったり、FileReader, FileWriterなどを使うとデフォルトエンコーディングになってしまう
+		- 必ず引数でcharset, エンコーディングを指定する or エンコーディング指定オプションのあるメソッドで代替する
+	- サロゲートペア（2文字で1文字を表現したやつ）の扱い
+		- 禁止するなら `Character.isLowSurrogate(c)` や `Character.isHighSurrogate(c)` で確認してエラーを出せばいい
+		- 許容するなら、文字数カウントなどで注意が必要
+			- `str.length()` よりも `str.codePointCount(0, str.length())` つかったり
+	- 文字列比較は equals を使わないと、同じ中身でもオブジェクトとしては別になってしまう
+		- `"aaa"` と `"a" + "aa"` は文字列としては同じ、でも `==` で比較すれば false
+		- `("a" + "aa").intern()` とすれば、明示的に両者を同一オブジェクトとして扱える
