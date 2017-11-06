@@ -35,7 +35,13 @@ def single(pred, label):
     """
     >>> single([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0])
     0.8333333333333334
+    >>> single([.2, .7, .3, .5, .8], [0, 1, 1, 0, 1])
+    0.8333333333333334
     """
+    sorted_indices = np.argsort(pred)[::-1]
+    pred = np.array(pred)[sorted_indices]
+    label = np.array(label)[sorted_indices]
+
     a, fp, tp, fp_prev, tp_prev = my_auc(pred, label)
 
     # get()
@@ -56,6 +62,10 @@ def multi(pred, label, sep=2):
     >>> multi([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0], sep=4)
     0.8333333333333334
     """
+    sorted_indices = np.argsort(pred)[::-1]
+    pred = np.array(pred)[sorted_indices]
+    label = np.array(label)[sorted_indices]
+
     a1, fp1, tp1, fp_prev1, tp_prev1 = my_auc(pred[:sep], label[:sep])
     a2, fp2, tp2, fp_prev2, tp_prev2 = my_auc(pred[sep:], label[sep:])
 
