@@ -318,3 +318,41 @@
 	- 文字列比較は equals を使わないと、同じ中身でもオブジェクトとしては別になってしまう
 		- `"aaa"` と `"a" + "aa"` は文字列としては同じ、でも `==` で比較すれば false
 		- `("a" + "aa").intern()` とすれば、明示的に両者を同一オブジェクトとして扱える
+
+## 8. ファイル操作を極める
+
+- ファイルを「簡潔なコードで」「安全に」「効率よく」扱うことが大切
+- ファイルもディレクトリも `new File(path)` で読める
+	- これにはファイルのメタデータ、シンボリックリンクが扱えない問題があって、ディレクトリ配下のファイルの生成・削除・更新の監視もできなかった
+	- なのでJava7から登場した `Paths.get(path)`のほうがよい
+- バイナリファイルはすべてメモリに読み込まず、ストリームとして少しずつ読む
+	- `Files.newInputStream()`
+	- Java7以降は try-with-resources でストリームを閉じる処理を省略
+	- 書き込み `Files.newOutputStream()` も同様に try-with-resources 構文でかける
+- テキストは文字コード指定が重要なので、 `Files.newInputStream()` ではなくて `Files.newBufferedReader()` を利用
+	- Java6以前は FileInputStream -> InputStreamReader -> BufferedReader という3段階が必要だったが、これなら1回で済む
+	- 書き込みは `Files.newBufferedWriter()`
+- Java8ではStream APIを使ったさらに高度なファイル読み込みが可能
+	- `reader.lines().map(...).forEach(...)` など
+- `Files` はファイルの作成、削除、コピー、ディレクトリ作成のシンプルなインタフェースも提供
+	- 一時ファイルも `Files.createTempFile()` でつくれる；一時的に必要なファイルは都度作成・削除処理を書いたり、ファイル名のコンフリクトを避けたり、といった実装が大変なので便利
+- パラメータを外部定義するとき、Javaがデフォルトで読み込み機構をもっているプロパティファイルにすることが多い
+	- `new Properties().load(reader).getProperty("key")`
+	- ファイル `xxx_ja.properties` と `xxx_en.properties` があると、`ResourceBundle.getbundle("xxx")` でPCの言語設定に応じた方を読んでくれる；国際化対応が可能（文字コードはISO 8859-1のみで、UTF-8は無理）
+- プロパティファイルが複雑になる場合はXMLにすることも
+	- DOM
+		- XMLファイルのInputStreamを `DocumentBuilder` でnodeにパースして読む
+		- ツリー構造をすべて読み込むのでメモリに優しくはない
+	- SAX (Simple API for XML)
+		- 構文解析を勧めながらイベント（e.g., 開/閉タグにたどりつく）ドリブンで必要な情報を取得していく
+		- `SAXParser` `SimpleHandler` を利用
+		- イベント時の処理をコールバックで指定（プッシュ型イベントドリブン）
+	- StAX (Streaming API for XML)
+		- SAXと似ているが、readerをループで舐めていってイベントがあったら処理をする、というプル型のイベントドリブン
+			- 「パース途中で処理を中止」みたいなことが可能
+	- XPath (Xml Path language)
+		- XMLから条件に適合した部分だけを取り出す
+	- JAXB (Java Architecture for XML Binding)
+		- XMLファイルとJavaオブジェクトを結びつける
+		- XMLの構造に対応するクラスを作っておいて、InputStreamをそれにバインディング
+- CSVはSuperCSV, JSONはJackson
