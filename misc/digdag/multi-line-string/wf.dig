@@ -1,0 +1,14 @@
++task1:
+  echo>: >
+    line1
+    line2
+    line3
+
++task2:
+  echo>: |
+    line1
+    line2
+    line3
+
++task3:
+  echo>: "Done"
