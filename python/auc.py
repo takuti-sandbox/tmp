@@ -33,10 +33,10 @@ def trapezoid(x1, x2, y1, y2):
 
 def single(pred, label):
     """
-    >>> single([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0])
-    0.8333333333333334
-    >>> single([.2, .7, .3, .5, .8], [0, 1, 1, 0, 1])
-    0.8333333333333334
+    >>> abs(single([.8, .7, .5, .3, .2], [1, 1, 0, 1, 0]) - roc_auc_score([1, 1, 0, 1, 0], [.8, .7, .5, .3, .2])) < 1e-4
+    True
+    >>> abs(single([.2, .7, .3, .5, .8], [0, 1, 1, 0, 1]) - roc_auc_score([0, 1, 1, 0, 1], [.2, .7, .3, .5, .8])) < 1e-4
+    True
     """
     sorted_indices = np.argsort(pred)[::-1]
     pred = np.array(pred)[sorted_indices]
