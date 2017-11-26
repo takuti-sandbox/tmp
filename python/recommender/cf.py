@@ -3,7 +3,9 @@ import numpy.linalg as ln
 
 
 def similarity(x, y):
-    return np.inner(x, y) / (ln.norm(x, ord=2) * ln.norm(y, ord=2))
+    x_mean = np.mean(x)
+    y_mean = np.mean(y)
+    return np.inner(x - x_mean, y - y_mean) / (ln.norm(x - x_mean, ord=2) * ln.norm(y - y_mean, ord=2))
 
 
 # 5 users * 6 items
