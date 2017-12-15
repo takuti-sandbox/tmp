@@ -22,7 +22,7 @@ import MeCab
 DEFAULT_DICT_SIZE = 100000
 
 # tagger = MeCab.Tagger()
-tagger = MeCab.Tagger(' -d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+tagger = MeCab.Tagger('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
 tagger.parse('')
 
 
