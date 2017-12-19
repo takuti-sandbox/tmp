@@ -44,7 +44,7 @@ class ConsistentHash(object):
 
 
 def main():
-    # Consistent Hasing over 7 machines and 3 replicas for each of them
+    # Consistent Hashing over 7 machines and 3 replicas for each of them
     ch = ConsistentHash(7, 3)
 
     print('Allocation:\n(machine, replica, hash)')
