@@ -82,6 +82,10 @@ class Foo {
     System.out.println(new String(ss.getBytes()));
   }
 
+  private static void parseDouble () {
+    System.out.println((Double.parseDouble("1.619520626263693E-4") + 1.d));
+  }
+
   public static void main(String[] args) {
     refHashMapElement();
 
@@ -99,5 +103,7 @@ class Foo {
     checkMaxAndInfinity();
 
     multibytes();
+
+    parseDouble();
   }
 }
