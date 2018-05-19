@@ -8,12 +8,13 @@ import numpy as np
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import FeatureHasher
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import log_loss
 from sklearn.metrics import roc_auc_score
 
 
-def parse_data():
+def parse_data(n_hashed_features=None):
     quantitative_keys = ['i{}'.format(i) for i in range(1, 14)]
     categorical_keys = ['c{}'.format(c) for c in range(1, 27)]
     rows, labels = [], []
@@ -26,14 +27,17 @@ def parse_data():
                 **dict(zip(categorical_keys, map(lambda c: '-' if c == '' else c, line[14:])))
             })
 
-    h = FeatureHasher(n_features=1000, alternate_sign=False)
-    X, y = h.transform(rows), np.asarray(labels)
+    if n_hashed_features:
+        vectorizer = FeatureHasher(n_features=n_hashed_features, alternate_sign=False)
+    else:
+        vectorizer = DictVectorizer()
+    X, y = vectorizer.fit_transform(rows), np.asarray(labels)
 
     return train_test_split(X, y, test_size=0.2, stratify=y)
 
 
 def main():
-    X_train, X_test, y_train, y_test = parse_data()
+    X_train, X_test, y_train, y_test = parse_data(n_hashed_features=1000)
     print('- parsed data into %d training and %d testing samples' % (X_train.shape[0], X_test.shape[0]))
 
     clf = RandomForestClassifier(n_estimators=100)
