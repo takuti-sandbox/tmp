@@ -1,0 +1,8 @@
++predict:
+  docker:
+    image: 'takuti/td-ml:latest'
+  py>: predict.run
+  _env:
+    TD_API_KEY: ${secret:apikey}
+    TD_API_SERVER: ${secret:endpoint}
+    S3_BUCKET: ${secret:s3_bucket}
