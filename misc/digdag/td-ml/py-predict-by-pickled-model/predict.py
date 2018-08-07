@@ -91,6 +91,15 @@ def run():
 
     os.remove('churn_prediction_result.csv')
 
+    # Wait for a while until imported records are fully available on TD
+    # console.
+    while True:
+        job = td.query(database, 'select count(key) from ' + table, type='presto')
+        job.wait()
+        if not job.error():
+            break
+        time.sleep(10)
+
 
 if __name__ == '__main__':
     run()

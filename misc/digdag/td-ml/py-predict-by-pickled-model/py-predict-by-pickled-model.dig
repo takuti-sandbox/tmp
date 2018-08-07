@@ -1,3 +1,7 @@
+_export:
+  td:
+    database: takuti
+
 +predict:
   docker:
     image: 'takuti/td-ml:latest'
@@ -6,3 +10,16 @@
     TD_API_KEY: ${secret:apikey}
     TD_API_SERVER: ${secret:endpoint}
     S3_BUCKET: ${secret:s3_bucket}
+
++join:
+  td>: join.sql
+  create_table: churn_enriched
+  engine: presto
+  _retry: 5
+
++rename:
+  td_ddl>:
+  rename_tables:
+  - from: churn_enriched
+    to: churn_predict
+  _retry: 5
