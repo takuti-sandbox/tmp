@@ -82,9 +82,11 @@ def run():
     table = 'churn_predict'
     try:
         td.table(database, table)
+    except tdclient.errors.NotFoundError:
+        pass
+    else:
         td.delete_table(database, table)
-    finally:
-        td.create_log_table(database, table)
+    td.create_log_table(database, table)
     td.import_file(database, table, 'csv', 'churn_prediction_result.csv')
 
     os.remove('churn_prediction_result.csv')
