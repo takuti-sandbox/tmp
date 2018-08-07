@@ -1,0 +1,7 @@
++run:
+  docker:
+    image: 'takuti/td-ml:latest'
+  py>: logistic_regression.run
+  _env:
+    TD_API_KEY: ${secret:apikey}
+    TD_API_SERVER: ${secret:endpoint}
