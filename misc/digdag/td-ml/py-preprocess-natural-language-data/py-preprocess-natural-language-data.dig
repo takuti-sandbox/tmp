@@ -1,0 +1,24 @@
+_export:
+  td:
+    database: takuti
+
++tokenize:
+  td>: title.sql
+  create_table: title
+  engine: hive
+  _retry: 5
+
++mapping:
+  docker:
+    image: 'takuti/td-ml:latest'
+  py>: task.TitleMappingGenerator.run
+  _env:
+    TD_API_KEY: ${secret:apikey}
+    TD_API_SERVER: ${secret:endpoint}
+
++clean:
+  td_ddl>:
+  drop_tables: ['title']
+  _retry: 5
+
+# Following tasks that use preprocessed data
