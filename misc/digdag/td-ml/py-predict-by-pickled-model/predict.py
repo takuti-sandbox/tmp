@@ -98,7 +98,7 @@ def run():
         job.wait()
         if not job.error():
             break
-        time.sleep(10)
+        time.sleep(30)
 
 
 if __name__ == '__main__':
