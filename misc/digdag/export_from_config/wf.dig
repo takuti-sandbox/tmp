@@ -1,5 +1,13 @@
 _export:
   !include : params.yml
 
-+print:
++print1:
   echo>: ${key}
+
++print2:
+  echo>: ${foo}
+
++print3:
+  _export:
+    foo: 2
+  echo>: ${foo}
