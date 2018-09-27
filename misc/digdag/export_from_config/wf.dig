@@ -1,8 +1,11 @@
 _export:
   !include : params.yml
 
++print0:
+ echo>: ${key}
+
 +print1:
-  echo>: ${key}
+ echo>: ${key.value1}
 
 +print2:
   echo>: ${foo}
