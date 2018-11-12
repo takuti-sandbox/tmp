@@ -1,0 +1,13 @@
+_export:
+  !include : config/params.yml
+  td:
+    engine: hive
+
++count:
+  td>: queries/count_customers.sql
+  store_last_results: true
+  engine: presto
+
++tfidf:
+  td>: queries/prepare_tfidf.sql
+  create_table: input
