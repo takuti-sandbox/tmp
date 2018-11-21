@@ -1,0 +1,10 @@
+timezone: Chile/Continental
+
++session_date:
+  echo>: ${session_date}
+
++session_time:
+  echo>: ${moment(session_time).format("YYYY-MM-DD")}
+
++format_session_time:
+  echo>: ${moment(session_time).subtract(2, 'days').format("YYYY-MM-DD")}
