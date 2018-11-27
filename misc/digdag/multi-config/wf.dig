@@ -7,3 +7,6 @@ _export:
 
 +print2:
   echo>: "${key.value2}"
+
++print3:
+  echo>: "${key.value3}"
