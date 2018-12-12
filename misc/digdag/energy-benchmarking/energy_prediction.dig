@@ -1,0 +1,33 @@
+_export:
+  !include : config.yml
+  td:
+    database: ${database}
+    engine: hive
+
++vectorize:
+  td>: queries/vectorize.sql
+  create_table: vectors
+
++shuffle:
+  td>: queries/shuffle.sql
+  create_table: samples
+  engine: presto
+
++train:
+  td>: queries/train.sql
+  create_table: model
+
++predict:
+  td>: queries/predict_validation.sql
+  create_table: prediction
+
++evaluate:
+  td>: queries/evaluate.sql
+  store_last_results: true
+
++show_accuracy:  # log accuracy of prediction
+  echo>: "RMSE: ${td.last_results.rmse}, MAE: ${td.last_results.mae}"
+
++clean:  # remove intermediate tables
+  td_ddl>:
+  drop_tables: ['vectors', 'samples']
