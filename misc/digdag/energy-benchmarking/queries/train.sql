@@ -6,7 +6,7 @@ from (
     train_regressor(
       features,
       annual_electricity_consumption,
-      '-loss_function squared -optimizer AdaGrad -regularization l1' -- hyper-parameters
+      '-loss_function squared' -- hyper-parameters
     ) as (feature, weight)
   from (
     select features, annual_electricity_consumption

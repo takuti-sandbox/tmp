@@ -4,11 +4,14 @@ with null_samples as (
     array_concat(
       categorical_features(
         array('Chicago community area', 'Primary use of property'),
-        community_area, primary_property_type
+        if(community_area = 'LOOP', 'LOOP', 'Others'),
+        if(primary_property_type = 'Office', 'Office', 'Others')
       ),
       quantitative_features(
         array('Total interior floor space', 'Building age', 'Number of buildings'),
-        gross_floor_area___buildings__sq_ft_, data_year - year_built, num_of_buildings
+        ln(gross_floor_area___buildings__sq_ft_ + 1),
+        ln(data_year - year_built + 1),
+        ln(num_of_buildings + 1)
       )
     ) as features
   from
