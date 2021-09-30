@@ -1,5 +1,6 @@
 import requests
 import time
+import csv
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
@@ -58,14 +59,12 @@ def get_abstract(url):
 
 def process_year(year):
     print('Year: {}'.format(year))
-
-    file = open('csv/{}.csv'.format(year), 'w')
-    file.write('url,title,abstract\n')
+    csvfile = open('csv/{}.csv'.format(year), 'w', newline='')
+    writer = csv.writer(csvfile)
+    writer.writerow(['url', 'title', 'abstract'])
     for url, title in get_article_links(proceeding_urls[year]):
         print(title, url)
-        file.write('{},{},{}'.format(url, title, get_abstract(url)))
-        file.write('\n')
-    file.close()
+        writer.writerow([url, title, get_abstract(url)])
 
 
 def run():
