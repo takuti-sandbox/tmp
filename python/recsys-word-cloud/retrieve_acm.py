@@ -22,7 +22,7 @@ proceeding_urls = {
 }
 
 
-def get_article_urls(root_url):
+def get_article_links(root_url):
     driver = webdriver.Chrome()
     driver.get(root_url)
 
@@ -36,7 +36,7 @@ def get_article_urls(root_url):
 
     titles = driver.find_elements_by_xpath("//a[ancestor::h5[contains(@class, 'issue-item__title')]]")
     for title in titles:
-        yield title.get_attribute('href')
+        yield title.get_attribute('href'), title.get_attribute('innerHTML')
 
     driver.quit()
 
@@ -60,10 +60,10 @@ def process_year(year):
     print('Year: {}'.format(year))
 
     file = open('csv/{}.csv'.format(year), 'w')
-    file.write('url,abstract\n')
-    for url in get_article_urls(proceeding_urls[year]):
-        print(url)
-        file.write('{},{}'.format(url, get_abstract(url)))
+    file.write('url,title,abstract\n')
+    for url, title in get_article_links(proceeding_urls[year]):
+        print(title, url)
+        file.write('{},{},{}'.format(url, title, get_abstract(url)))
         file.write('\n')
     file.close()
 
