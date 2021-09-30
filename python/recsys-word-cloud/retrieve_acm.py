@@ -37,7 +37,7 @@ def get_article_links(root_url):
 
     titles = driver.find_elements_by_xpath("//a[ancestor::h5[contains(@class, 'issue-item__title')]]")
     for title in titles:
-        yield title.get_attribute('href'), title.get_attribute('innerHTML')
+        yield title.get_attribute('href'), title.get_attribute('innerText')
 
     driver.quit()
 
