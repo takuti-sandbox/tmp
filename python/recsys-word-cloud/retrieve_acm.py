@@ -1,15 +1,30 @@
 import requests
 import time
 from bs4 import BeautifulSoup
-from wordcloud import WordCloud, STOPWORDS
 from selenium import webdriver
 
 
-def get_article_urls():
-    proceeding_url = 'https://dl.acm.org/doi/proceedings/10.1145/3460231'
+proceeding_urls = {
+    2008: 'https://dl.acm.org/doi/proceedings/10.1145/1454008',
+    2009: 'https://dl.acm.org/doi/proceedings/10.1145/1639714',
+    2010: 'https://dl.acm.org/doi/proceedings/10.1145/1864708',
+    2011: 'https://dl.acm.org/doi/proceedings/10.1145/2043932',
+    2012: 'https://dl.acm.org/doi/proceedings/10.1145/2365952',
+    2013: 'https://dl.acm.org/doi/proceedings/10.1145/2507157',
+    2014: 'https://dl.acm.org/doi/proceedings/10.1145/2645710',
+    2015: 'https://dl.acm.org/doi/proceedings/10.1145/2792838',
+    2016: 'https://dl.acm.org/doi/proceedings/10.1145/2959100',
+    2017: 'https://dl.acm.org/doi/proceedings/10.1145/3109859',
+    2018: 'https://dl.acm.org/doi/proceedings/10.1145/3240323',
+    2019: 'https://dl.acm.org/doi/proceedings/10.1145/3298689',
+    2020: 'https://dl.acm.org/doi/proceedings/10.1145/3383313',
+    2021: 'https://dl.acm.org/doi/proceedings/10.1145/3460231',
+}
 
+
+def get_article_urls(root_url):
     driver = webdriver.Chrome()
-    driver.get(proceeding_url)
+    driver.get(root_url)
 
     time.sleep(1)
 
@@ -41,16 +56,21 @@ def get_abstract(url):
     return div.find('p').decode_contents()
 
 
-def run():
-    sources = []
-    for url in get_article_urls():
-        print(url)
-        sources.append(get_abstract(url))
+def process_year(year):
+    print('Year: {}'.format(year))
 
-    stopwords = set(STOPWORDS)
-    stopwords |= set(open('stopwords.txt').read().rstrip().split('\n'))
-    wordcloud = WordCloud(stopwords=stopwords).generate(' '.join(sources))
-    wordcloud.to_file('png/recsys2021.png')
+    file = open('csv/{}.csv'.format(year), 'w')
+    file.write('url,abstract\n')
+    for url in get_article_urls(proceeding_urls[year]):
+        print(url)
+        file.write('{},{}'.format(url, get_abstract(url)))
+        file.write('\n')
+    file.close()
+
+
+def run():
+    for year in proceeding_urls.keys():
+        process_year(year)
 
 
 if __name__ == '__main__':
